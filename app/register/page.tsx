@@ -32,8 +32,8 @@ function PatientPortalContent() {
             // Modern initialization with error boundary
             const initOneSignal = async () => {
                 try {
-                    // Check if push is supported by the browser
-                    if (!(OneSignal as any).isPushNotificationsSupported()) {
+                    // Check if push is supported by the browser (v16 syntax)
+                    if (!(OneSignal as any).Notifications.isPushSupported()) {
                         console.warn('OneSignal: Browser does not support push notifications.');
                         return;
                     }
