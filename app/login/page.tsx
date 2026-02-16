@@ -1,11 +1,11 @@
 'use client';
 
 import { login, resetPassword } from './actions';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Lock, Mail, Users, AlertCircle, CheckCircle2, Loader2, KeyRound } from 'lucide-react';
 
-export default function LoginPage() {
+function LoginContent() {
     const searchParams = useSearchParams();
     const error = searchParams.get('error');
     const message = searchParams.get('message');
@@ -128,5 +128,17 @@ export default function LoginPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+                <Loader2 className="animate-spin text-blue-600" size={48} />
+            </div>
+        }>
+            <LoginContent />
+        </Suspense>
     );
 }
