@@ -18,7 +18,7 @@ type QueueSettings = {
     is_open: boolean;
 };
 
-export default function OperatorB() {
+export default function DispatcherDashboard() {
     const [queues, setQueues] = useState<Record<string, QueueItem[]>>({
         'Animal Bite': [],
         'Prenatal': [],
@@ -43,7 +43,7 @@ export default function OperatorB() {
 
         // Subscribe to queue changes
         const queueChannel = supabase
-            .channel('queue_changes')
+            .channel('dispatcher_queue_changes')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'queue' }, () => {
                 fetchQueues();
             })
@@ -51,7 +51,7 @@ export default function OperatorB() {
 
         // Subscribe to settings changes
         const settingsChannel = supabase
-            .channel('settings_changes')
+            .channel('dispatcher_settings_changes')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'queue_settings' }, () => {
                 fetchSettings();
             })
@@ -145,8 +145,8 @@ export default function OperatorB() {
             <div className="max-w-[1600px] mx-auto">
                 <header className="flex flex-col sm:flex-row justify-between items-center sm:items-end mb-12 gap-4">
                     <div className="text-center sm:text-left">
-                        <h1 className="text-4xl font-black text-slate-900 tracking-tight">Queue Dispatcher</h1>
-                        <p className="text-slate-500 font-medium">Operator B Dashboard - Full Control & Limits</p>
+                        <h1 className="text-4xl font-black text-slate-900 tracking-tight">Dispatcher Dashboard</h1>
+                        <p className="text-slate-500 font-medium">Operations Hub - Full Control & Limits</p>
                     </div>
                     <div className="flex items-center gap-4">
                         <button
@@ -209,7 +209,7 @@ export default function OperatorB() {
                                     </div>
                                 </div>
 
-                                <div className="p-6 flex-grow flex flex-col gap-6 bg-white">
+                                <div className="p-6-grow flex flex-col gap-6 bg-white">
                                     {/* Limit Configuration Section */}
                                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-4">
                                         <div className="flex items-center gap-2 text-slate-600">

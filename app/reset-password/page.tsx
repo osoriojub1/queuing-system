@@ -34,7 +34,7 @@ export default function ResetPasswordPage() {
         } else {
             setSuccess(true);
             setTimeout(() => {
-                router.push('/operator-a');
+                router.push('/front-desk');
             }, 2000);
         }
         setIsLoading(false);

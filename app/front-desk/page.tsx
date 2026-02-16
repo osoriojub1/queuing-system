@@ -20,7 +20,7 @@ const categories: CategoryInfo[] = [
     { id: 'Medicine', icon: Pill, color: 'text-blue-600', label: 'Medicine', description: 'Internal medicine & general' }
 ];
 
-export default function OperatorA() {
+export default function FrontDeskView() {
     const [loading, setLoading] = useState(false);
     const [latestTicket, setLatestTicket] = useState<{ id: string; ticket_number: string } | null>(null);
     const [pendingCategory, setPendingCategory] = useState<CategoryInfo | null>(null);
@@ -33,7 +33,7 @@ export default function OperatorA() {
 
         // Subscribe to settings changes
         const settingsChannel = supabase
-            .channel('operator_a_settings')
+            .channel('front_desk_settings')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'queue_settings' }, () => {
                 fetchInitialData();
             })
@@ -41,7 +41,7 @@ export default function OperatorA() {
 
         // Subscribe to queue changes to keep counts accurate
         const queueChannel = supabase
-            .channel('operator_a_queue')
+            .channel('front_desk_queue')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'queue' }, () => {
                 fetchInitialData();
             })
