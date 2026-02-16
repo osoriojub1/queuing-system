@@ -16,6 +16,7 @@ function PatientPortalContent() {
     const [loading, setLoading] = useState(true);
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [showTurnAlert, setShowTurnAlert] = useState(false);
+    const [oneSignalError, setOneSignalError] = useState<string | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     useEffect(() => {
@@ -27,35 +28,57 @@ function PatientPortalContent() {
         const ONESIGNAL_APP_ID = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID;
         if (ONESIGNAL_APP_ID) {
             console.log('OneSignal: Initializing with ID:', ONESIGNAL_APP_ID);
-            OneSignal.init({
-                appId: ONESIGNAL_APP_ID,
-                allowLocalhostAsSecureOrigin: true,
-            }).then(() => {
-                console.log('OneSignal: Initialized');
-                setIsSubscribed(OneSignal.Notifications.permission);
 
-                // Add event listener for subscription changes
-                // This ensures we catch the ID as soon as it's generated, even if the user
-                // reacts to the standard browser prompt instead of our bell button.
-                OneSignal.User.PushSubscription.addEventListener('change', async (event: any) => {
-                    const pushId = event.current.id;
-                    const isOptedIn = event.current.optedIn;
-                    console.log('OneSignal: Subscription change detected', { pushId, isOptedIn });
-
-                    if (pushId && ticketId && isOptedIn) {
-                        console.log('OneSignal: Syncing Push ID to Supabase...');
-                        await updatePushId(ticketId, pushId);
-                        setIsSubscribed(true);
+            // Modern initialization with error boundary
+            const initOneSignal = async () => {
+                try {
+                    // Check if push is supported by the browser
+                    if (!(OneSignal as any).isPushNotificationsSupported()) {
+                        console.warn('OneSignal: Browser does not support push notifications.');
+                        return;
                     }
-                });
 
-                // Initial check if already subscribed
-                const currentPushId = OneSignal.User.PushSubscription.id;
-                if (currentPushId && ticketId) {
-                    console.log('OneSignal: Already subscribed, syncing Push ID:', currentPushId);
-                    updatePushId(ticketId, currentPushId);
+                    await OneSignal.init({
+                        appId: ONESIGNAL_APP_ID,
+                        allowLocalhostAsSecureOrigin: true,
+                        serviceWorkerPath: "/OneSignalSDKWorker.js", // Explicit path for Vercel
+                    } as any);
+
+                    console.log('OneSignal: Initialized successfully');
+                    setIsSubscribed(OneSignal.Notifications.permission);
+
+                    // Add event listener for subscription changes
+                    OneSignal.User.PushSubscription.addEventListener('change', async (event: any) => {
+                        const pushId = event.current.id;
+                        const isOptedIn = event.current.optedIn;
+                        console.log('OneSignal: Subscription change detected', { pushId, isOptedIn });
+
+                        if (pushId && ticketId && isOptedIn) {
+                            console.log('OneSignal: Syncing Push ID to Supabase...');
+                            await updatePushId(ticketId, pushId);
+                            setIsSubscribed(true);
+                        }
+                    });
+
+                    // Initial check if already subscribed
+                    const currentPushId = OneSignal.User.PushSubscription.id;
+                    if (currentPushId && ticketId) {
+                        console.log('OneSignal: Already subscribed, syncing Push ID:', currentPushId);
+                        updatePushId(ticketId, currentPushId);
+                    }
+                } catch (err: any) {
+                    console.error('OneSignal: Initialization Failed:', err);
+
+                    // Detection logic for IndexedDB failures (Private Mode / Corrupted Cache)
+                    if (err.message?.includes('indexedDB') || err.name === 'UnknownError') {
+                        setOneSignalError('BROWSER_STORAGE_ERROR');
+                    } else {
+                        setOneSignalError('GENERAL_ERROR');
+                    }
                 }
-            });
+            };
+
+            initOneSignal();
         }
 
         // Real-time listener
@@ -173,6 +196,27 @@ function PatientPortalContent() {
                     </button>
                 </div>
             </div>
+
+            {/* ERROR UI: OneSignal / Browser Storage Issues */}
+            {oneSignalError && (
+                <div className="mx-6 mb-4 p-5 bg-amber-500/10 border border-amber-500/50 rounded-3xl animate-in fade-in slide-in-from-bottom-4">
+                    <div className="flex gap-4">
+                        <div className="bg-amber-500 text-slate-900 p-2 rounded-xl h-fit">
+                            <AlertCircle size={20} />
+                        </div>
+                        <div>
+                            <h3 className="text-amber-500 font-black uppercase text-xs tracking-widest mb-1">
+                                {oneSignalError === 'BROWSER_STORAGE_ERROR' ? 'Browser Storage Blocked' : 'Notification Issue'}
+                            </h3>
+                            <p className="text-slate-300 text-sm leading-relaxed">
+                                {oneSignalError === 'BROWSER_STORAGE_ERROR'
+                                    ? 'Your browser is blocking the local database. Please turn off "Private/Incognito" mode or clear your browser cache to receive notifications.'
+                                    : 'There was a problem starting notifications. Please refresh the page.'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="flex-grow flex flex-col items-center justify-center p-8">
                 <div className="text-slate-400 text-sm font-bold uppercase tracking-[0.2em] mb-4">Your Ticket Number</div>
