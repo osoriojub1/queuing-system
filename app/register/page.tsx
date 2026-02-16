@@ -26,11 +26,35 @@ function PatientPortalContent() {
         // OneSignal Init
         const ONESIGNAL_APP_ID = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID;
         if (ONESIGNAL_APP_ID) {
+            console.log('OneSignal: Initializing with ID:', ONESIGNAL_APP_ID);
             OneSignal.init({
                 appId: ONESIGNAL_APP_ID,
                 allowLocalhostAsSecureOrigin: true,
             }).then(() => {
+                console.log('OneSignal: Initialized');
                 setIsSubscribed(OneSignal.Notifications.permission);
+
+                // Add event listener for subscription changes
+                // This ensures we catch the ID as soon as it's generated, even if the user
+                // reacts to the standard browser prompt instead of our bell button.
+                OneSignal.User.PushSubscription.addEventListener('change', async (event: any) => {
+                    const pushId = event.current.id;
+                    const isOptedIn = event.current.optedIn;
+                    console.log('OneSignal: Subscription change detected', { pushId, isOptedIn });
+
+                    if (pushId && ticketId && isOptedIn) {
+                        console.log('OneSignal: Syncing Push ID to Supabase...');
+                        await updatePushId(ticketId, pushId);
+                        setIsSubscribed(true);
+                    }
+                });
+
+                // Initial check if already subscribed
+                const currentPushId = OneSignal.User.PushSubscription.id;
+                if (currentPushId && ticketId) {
+                    console.log('OneSignal: Already subscribed, syncing Push ID:', currentPushId);
+                    updatePushId(ticketId, currentPushId);
+                }
             });
         }
 
@@ -96,13 +120,23 @@ function PatientPortalContent() {
     };
 
     const togglePush = async () => {
-        if (!isSubscribed) {
-            await OneSignal.Notifications.requestPermission();
-            const pushId = OneSignal.User.PushSubscription.id;
-            if (pushId && ticketId) {
-                await updatePushId(ticketId, pushId);
+        try {
+            if (!isSubscribed) {
+                console.log('OneSignal: Requesting permission...');
+                await OneSignal.Notifications.requestPermission();
+
+                // OneSignal.User.PushSubscription.id might be null briefly after permission
+                // But our event listener added in useEffect will catch it when it arrives.
+                // However, for immediate feedback:
+                const pushId = OneSignal.User.PushSubscription.id;
+                if (pushId && ticketId) {
+                    console.log('OneSignal: Permission granted, ID found:', pushId);
+                    await updatePushId(ticketId, pushId);
+                }
+                setIsSubscribed(OneSignal.Notifications.permission);
             }
-            setIsSubscribed(OneSignal.Notifications.permission);
+        } catch (err) {
+            console.error('OneSignal: togglePush error:', err);
         }
     };
 
