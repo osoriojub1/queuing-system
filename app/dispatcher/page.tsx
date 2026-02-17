@@ -185,7 +185,7 @@ export default function DispatcherDashboard() {
                             className="rounded-lg"
                         />
                         <div className="text-left">
-                            <h1 className="text-xl font-black tracking-tighter uppercase text-slate-900 leading-none">VDH Hospital</h1>
+                            <h1 className="text-xl font-black tracking-tighter uppercase text-slate-900 leading-none">VDH</h1>
                             <p className="text-[10px] text-blue-600 font-black uppercase tracking-widest mt-1">Dispatcher Hub</p>
                         </div>
                     </div>

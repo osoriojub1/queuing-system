@@ -152,7 +152,7 @@ export default function FrontDeskView() {
                                 className="rounded-xl"
                             />
                             <div className="text-left py-1 pr-2">
-                                <h1 className="text-xl font-black tracking-tighter uppercase text-blue-600 leading-none">VDH Hospital</h1>
+                                <h1 className="text-xl font-black tracking-tighter uppercase text-blue-600 leading-none">VDH</h1>
                                 <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">Registration Desk</p>
                             </div>
                         </div>
