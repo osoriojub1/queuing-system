@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { createTicket, signOut } from '@/app/actions/queue-actions';
 import QRCode from 'react-qr-code';
@@ -133,12 +134,21 @@ export default function FrontDeskView() {
                             Sign Out
                         </button>
                     </div>
-                    <div className="flex justify-center mb-4">
-                        <div className="bg-blue-600 p-4 rounded-2xl shadow-xl shadow-blue-500/20">
-                            <Users size={48} className="text-white" />
+                    <div className="flex justify-center mb-6">
+                        <div className="bg-white/10 p-3 rounded-3xl backdrop-blur-md border border-white/10 shadow-xl flex items-center gap-4">
+                            <Image
+                                src="/logo.png"
+                                alt="Logo"
+                                width={50}
+                                height={50}
+                                className="rounded-xl"
+                            />
+                            <div className="text-left py-1 pr-2">
+                                <h1 className="text-xl font-black tracking-tighter uppercase text-blue-600 leading-none">VDH Hospital</h1>
+                                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">Registration Desk</p>
+                            </div>
                         </div>
                     </div>
-                    <h1 className="text-5xl font-black text-slate-900 mb-3 tracking-tight">Hospital Registration</h1>
                     <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">Please select a category to get your ticket</p>
                 </header>
 

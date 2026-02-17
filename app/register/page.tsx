@@ -269,20 +269,24 @@ function PatientPortalContent() {
                 <p>Keep this page open to receive real-time updates. You will be notified when it's your turn.</p>
             </div>
 
-            {/* Full-screen Turn Alert */}
+            {/* Full-screen Turn Alert - Responsive Fix */}
             {showTurnAlert && ticket.status === 'serving' && (
-                <div className="fixed inset-0 bg-blue-600 flex flex-col items-center justify-center z-50 animate-fade-in p-8 text-center">
-                    <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center mb-8 animate-bounce">
-                        <Bell size={64} className="text-white" />
+                <div className="fixed inset-0 bg-blue-600 flex flex-col items-center justify-center z-50 animate-fade-in p-4 sm:p-8 text-center overscroll-none">
+                    <div className="w-20 h-20 sm:w-32 sm:h-32 bg-white/20 rounded-full flex items-center justify-center mb-4 sm:mb-8 animate-bounce">
+                        <Bell className="w-10 h-10 sm:w-16 sm:h-16 text-white" />
                     </div>
-                    <h2 className="text-6xl font-black text-white mb-4 tracking-tighter uppercase">It's Your Turn!</h2>
-                    <p className="text-2xl text-blue-100 mb-12">Please proceed to the {ticket.category} station immediately.</p>
-                    <div className="text-9xl font-black text-white mb-12 bg-slate-900/20 px-12 py-6 rounded-3xl">
+                    <h2 className="text-4xl sm:text-6xl font-black text-white mb-2 sm:mb-4 tracking-tighter uppercase leading-tight">
+                        It's Your Turn!
+                    </h2>
+                    <p className="text-lg sm:text-2xl text-blue-100 mb-6 sm:mb-12 font-medium">
+                        Please proceed to the <span className="font-black text-white">{ticket.category}</span> station immediately.
+                    </p>
+                    <div className="text-6xl sm:text-9xl font-black text-white mb-8 sm:mb-12 bg-slate-900/20 px-8 py-4 sm:px-12 sm:py-6 rounded-3xl border border-white/10 shadow-inner">
                         {ticket.ticket_number}
                     </div>
                     <button
                         onClick={() => setShowTurnAlert(false)}
-                        className="px-12 py-5 bg-white text-blue-600 rounded-2xl font-black text-xl shadow-2xl active:scale-95 transition-all"
+                        className="w-full max-w-[280px] sm:max-w-none sm:w-auto px-10 py-4 sm:px-12 sm:py-5 bg-white text-blue-600 rounded-2xl font-black text-lg sm:text-xl shadow-2xl active:scale-95 transition-all hover:bg-blue-50"
                     >
                         I AM GOING
                     </button>

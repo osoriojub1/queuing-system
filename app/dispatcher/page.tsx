@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { dispatchNext, callPrevious, resetQueue, updateMaxLimit, toggleService, signOut } from '@/app/actions/queue-actions';
 import { ChevronRight, Users, Play, CheckCircle, RotateCcw, ArrowLeft, Settings2, Save, LogOut, Power, PowerOff } from 'lucide-react';
@@ -144,9 +145,18 @@ export default function DispatcherDashboard() {
         <div className="min-h-screen bg-slate-100 p-8">
             <div className="max-w-[1600px] mx-auto">
                 <header className="flex flex-col sm:flex-row justify-between items-center sm:items-end mb-12 gap-4">
-                    <div className="text-center sm:text-left">
-                        <h1 className="text-4xl font-black text-slate-900 tracking-tight">Dispatcher Dashboard</h1>
-                        <p className="text-slate-500 font-medium">Operations Hub - Full Control & Limits</p>
+                    <div className="flex items-center gap-4 bg-white p-3 rounded-2xl shadow-sm border border-slate-200">
+                        <Image
+                            src="/logo.png"
+                            alt="Logo"
+                            width={44}
+                            height={44}
+                            className="rounded-lg"
+                        />
+                        <div className="text-left">
+                            <h1 className="text-xl font-black tracking-tighter uppercase text-slate-900 leading-none">VDH Hospital</h1>
+                            <p className="text-[10px] text-blue-600 font-black uppercase tracking-widest mt-1">Dispatcher Hub</p>
+                        </div>
                     </div>
                     <div className="flex items-center gap-4">
                         <button

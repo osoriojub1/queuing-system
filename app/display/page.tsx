@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { Clock as ClockIcon, Users } from 'lucide-react';
 
@@ -162,13 +163,31 @@ export default function PublicDisplay() {
                 })}
             </main>
 
-            {/* Minimal Footer */}
-            <footer className="bg-slate-900 px-12 py-8 border-t border-slate-800 flex justify-between items-center text-slate-500">
-                <div className="flex items-center gap-4 text-2xl font-black tracking-widest uppercase italic">
-                    Tabao District Hospital Queuing System
+            {/* Refined Footer with Logo */}
+            <footer className="bg-slate-900 px-12 py-8 border-t border-slate-800 flex justify-between items-center">
+                <div className="flex items-center gap-6">
+                    <div className="bg-white/5 p-2 rounded-2xl border border-white/10">
+                        <Image
+                            src="/logo.png"
+                            alt="Logo"
+                            width={60}
+                            height={60}
+                            className="rounded-xl"
+                        />
+                    </div>
+                    <div>
+                        <h2 className="text-3xl font-black tracking-tighter uppercase text-white leading-none mb-1">Valladolid District Hospital</h2>
+                        <p className="text-blue-500 text-xs font-black uppercase tracking-[0.4em]">Government Medical Service Center</p>
+                    </div>
                 </div>
-                <div className="text-2xl font-bold italic">
-                    Please wait for your number to be called
+
+                <div className="flex flex-col items-end gap-2 text-right">
+                    <div className="text-3xl font-black text-slate-300 italic uppercase tracking-widest">
+                        Now Calling Numbers
+                    </div>
+                    <div className="text-sm text-slate-500 font-bold uppercase tracking-widest">
+                        Please wait for your turn • Maging mahinahon at maayos
+                    </div>
                 </div>
             </footer>
         </div>
