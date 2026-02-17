@@ -164,6 +164,10 @@ export default function DispatcherDashboard() {
         } else if (action === 'toggle_service') {
             const currentStatus = serviceStatus[category];
             result = await toggleService(category, !currentStatus);
+            // Re-fetch settings immediately to update UI without refresh
+            if (result.success) {
+                await fetchSettings();
+            }
         }
 
         if (result && !result.success) {
@@ -262,11 +266,12 @@ export default function DispatcherDashboard() {
                                                 type="number"
                                                 value={tempLimits[category] || ''}
                                                 onChange={(e) => setTempLimits(prev => ({ ...prev, [category]: e.target.value }))}
-                                                className="w-20 px-3 py-1.5 rounded-xl border border-slate-300 font-black text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                disabled={!serviceStatus[category]}
+                                                className="w-20 px-3 py-1.5 rounded-xl border border-slate-300 font-black text-center focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-100 disabled:text-slate-400"
                                             />
                                             <button
                                                 onClick={() => handleAction(category, 'update_limit')}
-                                                disabled={loading[category]}
+                                                disabled={loading[category] || !serviceStatus[category]}
                                                 className="p-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:bg-slate-300 transition-colors"
                                             >
                                                 <Save size={18} />
@@ -275,11 +280,11 @@ export default function DispatcherDashboard() {
                                     </div>
 
                                     {/* Now Serving Section */}
-                                    <div className="bg-blue-50 border-2 border-blue-100 rounded-3xl p-8 text-center relative overflow-hidden">
+                                    <div className={`bg-blue-50 border-2 border-blue-100 rounded-3xl p-8 text-center relative overflow-hidden transition-opacity ${!serviceStatus[category] ? 'opacity-50' : ''}`}>
                                         <div className="absolute top-0 right-0 p-4">
                                             <button
                                                 onClick={() => handleAction(category, 'previous')}
-                                                disabled={loading[category]}
+                                                disabled={loading[category] || !serviceStatus[category]}
                                                 className="p-3 bg-white border border-blue-200 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white disabled:opacity-50 transition-all shadow-sm"
                                                 title="Call Previous"
                                             >
@@ -294,7 +299,7 @@ export default function DispatcherDashboard() {
 
                                         <button
                                             onClick={() => handleAction(category, 'next')}
-                                            disabled={loading[category] || waiting.length === 0}
+                                            disabled={loading[category] || waiting.length === 0 || !serviceStatus[category]}
                                             className="w-full btn-medical bg-blue-600 text-white hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none flex flex-row justify-center items-center py-5 text-xl"
                                         >
                                             <Play size={24} fill="white" className="mr-3" />
