@@ -55,27 +55,35 @@ export default function FrontDeskView() {
     }, []);
 
     const fetchInitialData = async () => {
-        // Fetch limits
+        // Fetch limits and reset timestamp
         const { data: settingsData } = await supabase.from('queue_settings').select('*');
         const limitMap: Record<string, number> = {};
         const statusMap: Record<string, boolean> = {};
+        const resets: Record<string, string> = {};
+
         settingsData?.forEach(s => {
             limitMap[s.category] = s.max_limit;
             statusMap[s.category] = s.is_open ?? true;
+            resets[s.category] = s.last_reset_at;
         });
         setLimits(limitMap);
         setServiceStatus(statusMap);
 
-        // Fetch current active counts (serving + waiting)
-        const { data: queueData } = await supabase
-            .from('queue')
-            .select('category')
-            .in('status', ['waiting', 'serving']);
-
+        // Fetch total registrations since last reset for each category
         const countMap: Record<string, number> = { 'Animal Bite': 0, 'Prenatal': 0, 'Medicine': 0 };
-        queueData?.forEach(q => {
-            if (countMap[q.category] !== undefined) countMap[q.category]++;
-        });
+
+        for (const cat of categories) {
+            const resetTime = resets[cat.id] || new Date(0).toISOString();
+
+            const { count } = await supabase
+                .from('queue')
+                .select('*', { count: 'exact', head: true })
+                .eq('category', cat.id)
+                .gt('created_at', resetTime);
+
+            countMap[cat.id] = count || 0;
+        }
+
         setCounts(countMap);
     };
 
