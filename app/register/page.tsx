@@ -185,7 +185,7 @@ function PatientPortalContent() {
             <div className="p-6 bg-slate-800/50 backdrop-blur-md sticky top-0 z-10 border-b border-slate-700">
                 <div className="flex justify-between items-center">
                     <div>
-                        <h1 className="text-xl font-black tracking-tighter uppercase text-blue-400">Hospital Live</h1>
+                        <h1 className="text-xl font-black tracking-tighter uppercase text-blue-400">VDH Live</h1>
                         <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">{ticket.category}</p>
                     </div>
                     <button

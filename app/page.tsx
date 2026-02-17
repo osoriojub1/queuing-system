@@ -21,7 +21,7 @@ export default function Home() {
         <h1 className="text-4xl font-black tracking-tighter uppercase mb-2">
           Staff <span className="text-blue-500">Portal</span>
         </h1>
-        <p className="text-slate-400 font-medium tracking-wide">Hospital Queuing & Dispatch System</p>
+        <p className="text-slate-400 font-medium tracking-wide">VDH Queuing & Dispatch System</p>
       </div>
 
       {/* Selection Cards */}
