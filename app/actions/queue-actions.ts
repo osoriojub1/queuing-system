@@ -194,7 +194,7 @@ export async function callPrevious(category: string) {
 
 export async function resetQueue(category: string) {
     try {
-        // Reset means mark all active (waiting/serving) as completed
+        // 1. Reset means mark all active (waiting/serving) as completed
         const { error } = await supabase
             .from('queue')
             .update({ status: 'completed' })
@@ -202,6 +202,13 @@ export async function resetQueue(category: string) {
             .in('status', ['waiting', 'serving']);
 
         if (error) throw error;
+
+        // 2. Update the reset timestamp in settings to restart the counter
+        await supabase
+            .from('queue_settings')
+            .update({ last_reset_at: new Date().toISOString() })
+            .eq('category', category);
+
         return { success: true };
     } catch (error) {
         console.error('Reset queue error:', error);
