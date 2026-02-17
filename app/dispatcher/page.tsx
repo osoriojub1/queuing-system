@@ -37,6 +37,11 @@ export default function DispatcherDashboard() {
     });
     const [tempLimits, setTempLimits] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState<Record<string, boolean>>({});
+    const [sessionTotals, setSessionTotals] = useState<Record<string, number>>({
+        'Animal Bite': 0,
+        'Prenatal': 0,
+        'Medicine': 0
+    });
 
     useEffect(() => {
         fetchQueues();
@@ -94,10 +99,7 @@ export default function DispatcherDashboard() {
                     .gt('created_at', s.last_reset_at || new Date(0).toISOString());
                 sessionMap[s.category] = count || 0;
             }
-            // We use a separate state to track these totals since 'queues' only holds active items
-            if (typeof window !== 'undefined') {
-                (window as any).__sessionTotals = sessionMap;
-            }
+            setSessionTotals(sessionMap);
         }
     };
 
@@ -143,7 +145,7 @@ export default function DispatcherDashboard() {
             }
         } else if (action === 'update_limit') {
             const newLimit = parseInt(tempLimits[category]);
-            const sessionTotal = (typeof window !== 'undefined' ? (window as any).__sessionTotals?.[category] : 0) || 0;
+            const sessionTotal = sessionTotals[category] || 0;
 
             if (isNaN(newLimit) || newLimit < 1) {
                 alert('Please enter a valid number');
@@ -302,8 +304,8 @@ export default function DispatcherDashboard() {
                                         <div className="mt-6 pt-6 border-t border-blue-100 flex justify-between items-center px-2">
                                             <span className="text-blue-400 text-xs font-black uppercase tracking-widest text-left">Capacity Status</span>
                                             <div className="text-right">
-                                                <span className={`text-lg font-black ${(typeof window !== 'undefined' ? (window as any).__sessionTotals?.[category] : 0) >= (settings[category] || 100) ? 'text-red-500' : 'text-blue-700'}`}>
-                                                    {(typeof window !== 'undefined' ? (window as any).__sessionTotals?.[category] : 0) || 0}
+                                                <span className={`text-lg font-black ${sessionTotals[category] >= (settings[category] || 100) ? 'text-red-500' : 'text-blue-700'}`}>
+                                                    {sessionTotals[category] || 0}
                                                 </span>
                                                 <span className="text-blue-300 font-bold"> / {settings[category] || 100}</span>
                                             </div>
