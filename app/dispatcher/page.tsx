@@ -65,20 +65,39 @@ export default function DispatcherDashboard() {
     }, []);
 
     const fetchQueues = async () => {
-        const { data, error } = await supabase
+        // 1. Fetch active tickets for the dashboard
+        const { data: activeData, error: activeError } = await supabase
             .from('queue')
             .select('*')
             .in('status', ['waiting', 'serving'])
             .order('created_at', { ascending: true });
 
-        if (error) console.error('Fetch error:', error);
+        // 2. Fetch reset timestamps to calculate session totals
+        const { data: settingsData } = await supabase.from('queue_settings').select('category, last_reset_at');
+
+        if (activeError) console.error('Fetch error:', activeError);
         else {
-            const grouped = (data as QueueItem[]).reduce((acc, item) => {
+            const grouped = (activeData as QueueItem[]).reduce((acc, item) => {
                 if (!acc[item.category]) acc[item.category] = [];
                 acc[item.category].push(item);
                 return acc;
             }, { 'Animal Bite': [], 'Prenatal': [], 'Medicine': [] } as Record<string, QueueItem[]>);
             setQueues(grouped);
+
+            // 3. Calculate Session Totals (all tickets since last reset)
+            const sessionMap: Record<string, number> = { 'Animal Bite': 0, 'Prenatal': 0, 'Medicine': 0 };
+            for (const s of settingsData || []) {
+                const { count } = await supabase
+                    .from('queue')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('category', s.category)
+                    .gt('created_at', s.last_reset_at || new Date(0).toISOString());
+                sessionMap[s.category] = count || 0;
+            }
+            // We use a separate state to track these totals since 'queues' only holds active items
+            if (typeof window !== 'undefined') {
+                (window as any).__sessionTotals = sessionMap;
+            }
         }
     };
 
@@ -116,7 +135,7 @@ export default function DispatcherDashboard() {
         } else if (action === 'previous') {
             result = await callPrevious(category);
         } else if (action === 'reset') {
-            if (confirm(`Are you sure you want to reset the entire ${category} queue?`)) {
+            if (confirm(`Are you sure you want to reset the entire ${category} queue? everything will be discarded and registration will return to zero.`)) {
                 result = await resetQueue(category);
             } else {
                 setLoading(prev => ({ ...prev, [category]: false }));
@@ -124,11 +143,21 @@ export default function DispatcherDashboard() {
             }
         } else if (action === 'update_limit') {
             const newLimit = parseInt(tempLimits[category]);
+            const sessionTotal = (typeof window !== 'undefined' ? (window as any).__sessionTotals?.[category] : 0) || 0;
+
             if (isNaN(newLimit) || newLimit < 1) {
                 alert('Please enter a valid number');
                 setLoading(prev => ({ ...prev, [category]: false }));
                 return;
             }
+
+            if (newLimit < sessionTotal) {
+                alert(`Limit cannot be lower than current registered patients (${sessionTotal}) unless the queue is reset.`);
+                setTempLimits(prev => ({ ...prev, [category]: settings[category].toString() }));
+                setLoading(prev => ({ ...prev, [category]: false }));
+                return;
+            }
+
             result = await updateMaxLimit(category, newLimit);
         } else if (action === 'toggle_service') {
             const currentStatus = serviceStatus[category];
@@ -273,8 +302,8 @@ export default function DispatcherDashboard() {
                                         <div className="mt-6 pt-6 border-t border-blue-100 flex justify-between items-center px-2">
                                             <span className="text-blue-400 text-xs font-black uppercase tracking-widest text-left">Capacity Status</span>
                                             <div className="text-right">
-                                                <span className={`text-lg font-black ${currentTotal >= (settings[category] || 100) ? 'text-red-500' : 'text-blue-700'}`}>
-                                                    {currentTotal}
+                                                <span className={`text-lg font-black ${(typeof window !== 'undefined' ? (window as any).__sessionTotals?.[category] : 0) >= (settings[category] || 100) ? 'text-red-500' : 'text-blue-700'}`}>
+                                                    {(typeof window !== 'undefined' ? (window as any).__sessionTotals?.[category] : 0) || 0}
                                                 </span>
                                                 <span className="text-blue-300 font-bold"> / {settings[category] || 100}</span>
                                             </div>
