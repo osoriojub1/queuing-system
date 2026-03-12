@@ -102,11 +102,38 @@ export default function FrontDeskView() {
         setPendingCategory(cat);
     };
 
+    const formatPhoneNumber = (input: string) => {
+        // Remove all non-numeric characters
+        let cleaned = input.replace(/\D/g, '');
+
+        // If it starts with 09, replace 0 with 63
+        if (cleaned.startsWith('09') && cleaned.length === 11) {
+            cleaned = '63' + cleaned.substring(1);
+        }
+
+        // Ensure it has the 63 prefix if it's 10 digits starting with 9
+        if (cleaned.length === 10 && cleaned.startsWith('9')) {
+            cleaned = '63' + cleaned;
+        }
+
+        // Return with + prefix
+        return cleaned ? '+' + cleaned : '';
+    };
+
     const registerTicket = async () => {
         if (!pendingCategory) return;
         const category = pendingCategory.id;
 
-        const phoneToRegister = enableSMS && phoneNumber.trim() ? phoneNumber.trim() : undefined;
+        let phoneToRegister = undefined;
+        if (enableSMS) {
+            const formatted = formatPhoneNumber(phoneNumber);
+            // Validation: Must be +63 followed by 10 digits (total 13 chars)
+            if (!/^\+639\d{9}$/.test(formatted)) {
+                alert('Invalid phone number. Please enter a valid 11-digit number (e.g., 09123456789) or a full number with +63.');
+                return;
+            }
+            phoneToRegister = formatted;
+        }
 
         setLoading(true);
         try {
@@ -266,13 +293,16 @@ export default function FrontDeskView() {
                                 {enableSMS && (
                                     <div className="animate-in slide-in-from-top-2 duration-200">
                                         <input
-                                            type="tel"
-                                            placeholder="Enter Phone Number (e.g. +639...)"
+                                            type="text"
+                                            inputMode="numeric"
+                                            placeholder="Enter 11-digit number (e.g. 0917...)"
                                             value={phoneNumber}
-                                            onChange={(e) => setPhoneNumber(e.target.value)}
+                                            onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').substring(0, 11))}
                                             className="w-full px-6 py-4 rounded-2xl border-2 border-slate-100 focus:border-blue-500 focus:outline-none font-bold text-slate-900 transition-all"
                                         />
-                                        <p className="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-widest ml-1">Receive queue number & tracking link via SMS</p>
+                                        <p className="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-widest ml-1">
+                                            Format: 11 digits (e.g., 09171234567). We'll add the +63 prefix automatically.
+                                        </p>
                                     </div>
                                 )}
                             </div>
