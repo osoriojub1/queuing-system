@@ -4,16 +4,21 @@ import { supabase } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient as createServerSupabase } from '@/utils/supabase/server';
+import { sendSMS } from '@/lib/sms';
 
 const ONESIGNAL_APP_ID = process.env.ONESIGNAL_APP_ID;
 const ONESIGNAL_REST_API_KEY = process.env.ONESIGNAL_REST_API_KEY;
 
-export async function createTicket(category: string) {
+export async function createTicket(category: string, phoneNumber?: string) {
     try {
         // 1. Insert the new ticket
         const { data: ticket, error } = await supabase
             .from('queue')
-            .insert([{ category, status: 'waiting' }])
+            .insert([{ 
+                category, 
+                status: 'waiting',
+                phone_number: phoneNumber || null
+            }])
             .select()
             .single();
 
@@ -29,6 +34,15 @@ export async function createTicket(category: string) {
             .lt('created_at', ticket.created_at);
 
         const position = (count || 0) + 1;
+
+        // 3. Send SMS if phone number is provided
+        if (phoneNumber && ticket) {
+            const appUrl = process.env.NEXT_PUBLIC_VERCEL_URL || 'http://localhost:3000';
+            const trackingUrl = `${appUrl}/register?id=${ticket.id}`;
+            const message = `Successful registration! Your ticket number for ${category} is ${ticket.ticket_number}. Track your status here: ${trackingUrl}`;
+            
+            await sendSMS(phoneNumber, message);
+        }
 
         return {
             success: true,
@@ -53,7 +67,7 @@ export async function dispatchNext(category: string) {
         // 2. Get the next 'waiting' patient
         const { data: nextPatient, error: nextError } = await supabase
             .from('queue')
-            .select('id, ticket_number, push_user_id')
+            .select('id, ticket_number, push_user_id, phone_number')
             .eq('category', category)
             .eq('status', 'waiting')
             .order('created_at', { ascending: true })
@@ -72,29 +86,39 @@ export async function dispatchNext(category: string) {
 
         // 4. Notification Logic:
         // A. Notify the person who JUST became 'serving'
+        const servingMessage = `It's your turn! Please proceed to the ${category} station.`;
         if (nextPatient.push_user_id) {
             await sendPushNotification(
                 [nextPatient.push_user_id],
-                `It's your turn! Please proceed to the ${category} station.`
+                servingMessage
             );
+        }
+        if (nextPatient.phone_number) {
+            await sendSMS(nextPatient.phone_number, servingMessage);
         }
 
         // B. Notify the person who is exactly 3 numbers away (the 3rd person in the waiting list)
         // This gives them a "heads up" to start moving towards the station.
         const { data: thirdInLine } = await supabase
             .from('queue')
-            .select('push_user_id')
+            .select('push_user_id, phone_number')
             .eq('category', category)
             .eq('status', 'waiting')
             .order('created_at', { ascending: true })
             .range(2, 2) // Get the 3rd item (0, 1, 2)
             .single();
 
-        if (thirdInLine?.push_user_id) {
-            await sendPushNotification(
-                [thirdInLine.push_user_id],
-                `Heads up! You are now 3rd in line for ${category}. Please prepare.`
-            );
+        if (thirdInLine) {
+            const headsUpMessage = `Heads up! You are now 3rd in line for ${category}. Please prepare.`;
+            if (thirdInLine.push_user_id) {
+                await sendPushNotification(
+                    [thirdInLine.push_user_id],
+                    headsUpMessage
+                );
+            }
+            if (thirdInLine.phone_number) {
+                await sendSMS(thirdInLine.phone_number, headsUpMessage);
+            }
         }
 
         return { success: true, ticket_number: nextPatient.ticket_number };

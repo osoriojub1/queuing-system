@@ -5,7 +5,8 @@ import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { createTicket, signOut } from '@/app/actions/queue-actions';
 import QRCode from 'react-qr-code';
-import { MousePointer2, Baby, Pill, X, CheckCircle2, AlertTriangle, Users, HelpCircle, LogOut } from 'lucide-react';
+import { MousePointer2, Baby, Pill, X, CheckCircle2, AlertTriangle, Users, HelpCircle, LogOut, MessageSquare, LayoutDashboard } from 'lucide-react';
+import Link from 'next/link';
 
 type CategoryInfo = {
     id: string;
@@ -28,6 +29,8 @@ export default function FrontDeskView() {
     const [limits, setLimits] = useState<Record<string, number>>({});
     const [counts, setCounts] = useState<Record<string, number>>({});
     const [serviceStatus, setServiceStatus] = useState<Record<string, boolean>>({});
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [enableSMS, setEnableSMS] = useState(false);
 
     useEffect(() => {
         fetchInitialData();
@@ -103,9 +106,11 @@ export default function FrontDeskView() {
         if (!pendingCategory) return;
         const category = pendingCategory.id;
 
+        const phoneToRegister = enableSMS && phoneNumber.trim() ? phoneNumber.trim() : undefined;
+
         setLoading(true);
         try {
-            const result = await createTicket(category);
+            const result = await createTicket(category, phoneToRegister);
 
             if (!result.success || !result.ticket) {
                 throw new Error(result.message || 'Failed to create ticket');
@@ -134,13 +139,22 @@ export default function FrontDeskView() {
             <div className="max-w-6xl mx-auto">
                 <header className="mb-16 text-center relative">
                     <div className="absolute top-0 right-0">
-                        <button
-                            onClick={() => signOut()}
-                            className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-slate-500 font-bold uppercase tracking-widest text-[10px] hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all shadow-sm active:scale-95"
-                        >
-                            <LogOut size={14} />
-                            Sign Out
-                        </button>
+                        <div className="flex gap-2">
+                            <Link
+                                href="/dispatcher"
+                                className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] hover:bg-blue-700 transition-all shadow-sm active:scale-95"
+                            >
+                                <LayoutDashboard size={14} />
+                                Dispatcher
+                            </Link>
+                            <button
+                                onClick={() => signOut()}
+                                className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-slate-500 font-bold uppercase tracking-widest text-[10px] hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all shadow-sm active:scale-95"
+                            >
+                                <LogOut size={14} />
+                                Sign Out
+                            </button>
+                        </div>
                     </div>
                     <div className="flex justify-center mb-6">
                         <div className="bg-white/10 p-3 rounded-3xl backdrop-blur-md border border-white/10 shadow-xl flex items-center gap-4">
@@ -236,7 +250,32 @@ export default function FrontDeskView() {
                             </div>
 
                             <h2 className="text-3xl font-black text-slate-900 mb-2 tracking-tight">CONFIRM TICKET</h2>
-                            <p className="text-slate-500 font-bold mb-8 uppercase tracking-widest text-xs opacity-60">Register patient for <span className="text-blue-600">{pendingCategory.label}</span>?</p>
+                             <p className="text-slate-500 font-bold mb-8 uppercase tracking-widest text-xs opacity-60">Register patient for <span className="text-blue-600">{pendingCategory.label}</span>?</p>
+
+                            <div className="mb-8 text-left space-y-4">
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <div 
+                                        onClick={() => setEnableSMS(!enableSMS)}
+                                        className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${enableSMS ? 'bg-blue-600 border-blue-600' : 'border-slate-300 group-hover:border-blue-400'}`}
+                                    >
+                                        {enableSMS && <MessageSquare size={14} className="text-white" />}
+                                    </div>
+                                    <span className="text-sm font-bold text-slate-600 uppercase tracking-wide">Enable SMS Notification</span>
+                                </label>
+
+                                {enableSMS && (
+                                    <div className="animate-in slide-in-from-top-2 duration-200">
+                                        <input
+                                            type="tel"
+                                            placeholder="Enter Phone Number (e.g. +639...)"
+                                            value={phoneNumber}
+                                            onChange={(e) => setPhoneNumber(e.target.value)}
+                                            className="w-full px-6 py-4 rounded-2xl border-2 border-slate-100 focus:border-blue-500 focus:outline-none font-bold text-slate-900 transition-all"
+                                        />
+                                        <p className="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-widest ml-1">Receive queue number & tracking link via SMS</p>
+                                    </div>
+                                )}
+                            </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <button
