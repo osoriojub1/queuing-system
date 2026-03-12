@@ -216,15 +216,15 @@ export default function DispatcherDashboard() {
                     </div>
                 </header>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                     {Object.entries(queues).map(([category, items]) => {
                         const serving = items.find(i => i.status === 'serving');
                         const waiting = items.filter(i => i.status === 'waiting');
                         const currentTotal = items.length;
 
                         return (
-                            <div key={category} className="medical-card flex flex-col h-[850px] transition-shadow hover:shadow-xl">
-                                <div className="bg-slate-900 text-white p-6 flex justify-between items-center">
+                            <div key={category} className="medical-card flex flex-col min-h-[750px] lg:h-[850px] transition-shadow hover:shadow-xl">
+                                <div className="bg-slate-900 text-white p-5 md:p-6 flex justify-between items-center">
                                     <div className="flex items-center gap-3">
                                         <div className={`w-3 h-3 rounded-full ${serviceStatus[category] ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
                                         <h2 className="text-2xl font-black uppercase tracking-tight">{category}</h2>
@@ -262,7 +262,7 @@ export default function DispatcherDashboard() {
                                     </div>
                                 </div>
 
-                                <div className="p-6-grow flex flex-col gap-6 bg-white">
+                                <div className="p-4 md:p-6 flex-grow flex flex-col gap-4 md:gap-6 bg-white">
                                     {/* Limit Configuration Section */}
                                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-4">
                                         <div className="flex items-center gap-2 text-slate-600">

@@ -40,7 +40,8 @@ export async function updateSession(request: NextRequest) {
         !request.nextUrl.pathname.startsWith('/login') &&
         !request.nextUrl.pathname.startsWith('/auth') &&
         !request.nextUrl.pathname.startsWith('/register') && // Patient view is public
-        !request.nextUrl.pathname.startsWith('/display') // Display view is public
+        !request.nextUrl.pathname.startsWith('/display') && // Display view is public
+        !request.nextUrl.pathname.startsWith('/OneSignalSDKWorker.js') // OneSignal Worker is public
     ) {
         // no user, potentially respond by redirecting the user to the login page
         const url = request.nextUrl.clone()
