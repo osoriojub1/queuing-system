@@ -17,6 +17,7 @@ function PatientPortalContent() {
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [showTurnAlert, setShowTurnAlert] = useState(false);
     const [oneSignalError, setOneSignalError] = useState<string | null>(null);
+    const [debugError, setDebugError] = useState<string | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     useEffect(() => {
@@ -68,9 +69,10 @@ function PatientPortalContent() {
                     }
                 } catch (err: any) {
                     console.error('OneSignal: Initialization Failed:', err);
+                    setDebugError(err.message || String(err));
 
                     // Detection logic for IndexedDB failures (Private Mode / Corrupted Cache)
-                    if (err.message?.includes('indexedDB') || err.name === 'UnknownError') {
+                    if (err.message?.includes('indexedDB') || err.message?.includes('database') || err.name === 'UnknownError') {
                         setOneSignalError('BROWSER_STORAGE_ERROR');
                     } else {
                         setOneSignalError('GENERAL_ERROR');
@@ -211,7 +213,7 @@ function PatientPortalContent() {
                             <p className="text-slate-300 text-sm leading-relaxed">
                                 {oneSignalError === 'BROWSER_STORAGE_ERROR'
                                     ? 'Your browser is blocking the local database. Please turn off "Private/Incognito" mode or clear your browser cache to receive notifications.'
-                                    : 'There was a problem starting notifications. Please refresh the page.'}
+                                    : `There was a problem starting notifications. ${debugError ? `(${debugError})` : 'Please refresh the page.'}`}
                             </p>
                         </div>
                     </div>

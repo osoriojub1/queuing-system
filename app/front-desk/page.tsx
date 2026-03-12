@@ -145,6 +145,10 @@ export default function FrontDeskView() {
 
             setLatestTicket(result.ticket);
             setPendingCategory(null); // Clear pending state on success
+            
+            // Clear SMS states
+            setPhoneNumber('');
+            setEnableSMS(false);
 
             // If they are in the first 3 waiting spots, we can show a special message
             if (result.position !== undefined && result.position <= 3) {
