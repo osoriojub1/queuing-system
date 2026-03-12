@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { dispatchNext, callPrevious, resetQueue, updateMaxLimit, toggleService, signOut } from '@/app/actions/queue-actions';
-import { ChevronRight, Users, Play, CheckCircle, RotateCcw, ArrowLeft, Settings2, Save, LogOut, Power, PowerOff } from 'lucide-react';
+import { ChevronRight, Users, Play, CheckCircle, RotateCcw, ArrowLeft, Settings2, Save, LogOut, Power, PowerOff, LayoutGrid } from 'lucide-react';
+import Link from 'next/link';
 
 type QueueItem = {
     id: string;
@@ -194,6 +195,13 @@ export default function DispatcherDashboard() {
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
+                        <Link
+                            href="/front-desk"
+                            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] hover:bg-blue-700 transition-all shadow-sm active:scale-95"
+                        >
+                            <LayoutGrid size={14} />
+                            Front-Desk
+                        </Link>
                         <button
                             onClick={() => signOut()}
                             className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-slate-500 font-bold uppercase tracking-widest text-[10px] hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all shadow-sm active:scale-95"
