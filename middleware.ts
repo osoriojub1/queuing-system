@@ -16,6 +16,6 @@ export const config = {
          * - display (Public Display View - PUBLIC)
          * Feel free to modify this pattern to include more paths.
          */
-        '/((?!_next/static|_next/image|favicon.ico|manifest.json|register|display|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+        '/((?!_next/static|_next/image|favicon.ico|manifest.json|OneSignalSDKWorker.js|register|display|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 }

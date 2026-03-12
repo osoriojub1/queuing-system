@@ -168,8 +168,8 @@ export default function FrontDeskView() {
     return (
         <div className="min-h-screen bg-slate-50 p-6 md:p-12">
             <div className="max-w-6xl mx-auto">
-                <header className="mb-16 text-center relative">
-                    <div className="absolute top-0 right-0">
+                <header className="mb-12 md:mb-16 text-center relative flex flex-col items-center">
+                    <div className="w-full flex justify-end mb-6 md:absolute md:top-0 md:right-0 md:mb-0">
                         <div className="flex gap-2">
                             <Link
                                 href="/dispatcher"
@@ -205,7 +205,7 @@ export default function FrontDeskView() {
                     <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">Please select a category to get your ticket</p>
                 </header>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                     {categories.map((cat) => {
                         const current = counts[cat.id] || 0;
                         const max = limits[cat.id] || 100;
